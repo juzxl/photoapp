@@ -1,0 +1,8 @@
+# Перенаправление для URL профилей пользователей
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Правило для URL /profile/{id}
+    RewriteRule ^profile/([0-9]+)$ /user-profile.html [L]
+</IfModule> 

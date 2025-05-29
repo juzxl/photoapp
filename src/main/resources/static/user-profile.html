@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя - PhotoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/fonts.css">
+    <style>
+        
+        .album-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+            position: relative;
+            height: 100%;
+            aspect-ratio: 1/1;
+            cursor: pointer;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .album-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .album-cover {
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .album-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .album-card:hover .album-cover img {
+            transform: scale(1.05);
+        }
+        
+        .album-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6));
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .album-card:hover .album-overlay {
+            opacity: 1;
+        }
+        
+        .album-info {
+            padding: 12px;
+            background: #fff;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size: 0.9rem;
+        }
+        
+        .album-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .album-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 0.8rem;
+        }
+        
+        .album-privacy {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .album-privacy i {
+            margin-right: 5px;
+        }
+        
+        .album-count {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .album-count i {
+            margin-right: 5px;
+        }
+        
+        .album-button {
+            display: inline-block;
+            padding: 6px 14px;
+            background: #212529;
+            color: #fff;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .album-button:hover {
+            background: #000;
+            color: #fff;
+        }
+        
+        /* Увеличенный отступ между альбомами */
+        #userAlbums .col-lg-3, 
+        #userAlbums .col-md-4, 
+        #userAlbums .col-sm-6 {
+            margin-bottom: 20px;
+        }
+        
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 3px solid #dee2e6;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .profile-avatar i {
+            font-size: 80px;
+            color: #adb5bd;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .profile-username {
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        .profile-meta {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">PhotoApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/gallery">Галерея</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/albums">Мои альбомы</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/upload">Загрузить</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/favorites">Избранное</a>
+                    </li>
+                </ul>
+                <!-- Поиск -->
+                <form class="d-flex me-3" id="searchForm">
+                    <input class="form-control me-2" type="search" placeholder="Поиск" id="searchInput">
+                    <button class="btn btn-outline-light" type="submit">Поиск</button>
+                </form>
+                <!-- Кнопки авторизации -->
+                <div class="guest-links">
+                    <a href="/login.html" class="btn btn-outline-light me-2">Войти</a>
+                    <a href="/register.html" class="btn btn-primary">Регистрация</a>
+                </div>
+                <!-- Меню пользователя -->
+                <div class="user-links" style="display:none;">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span class="username-display">Пользователь</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Профиль</a></li>
+                            <li><a class="dropdown-item" href="/settings">Настройки</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <div class="container mt-4">
+        <!-- Профиль пользователя -->
+        <div class="profile-header text-center mb-5">
+            <div class="profile-avatar mx-auto">
+                <img id="user-avatar" src="" alt="Аватар пользователя" style="display: none;">
+                <i id="default-avatar-icon" class="fas fa-user"></i>
+            </div>
+            <h2 id="username" class="profile-username mt-3">Загрузка...</h2>
+            <p id="userInfo" class="profile-meta text-muted">Загрузка информации...</p>
+            
+            <div class="owner-only" style="display: none;">
+                <a href="/settings.html" class="btn btn-outline-dark btn-sm">
+                    <i class="fas fa-cog me-1"></i>Редактировать профиль
+                </a>
+            </div>
+        </div>
+
+        <div class="albums-section mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 id="albumsTitle">Альбомы пользователя</h4>
+                <div class="owner-only" style="display: none;">
+                    <a href="/upload.html" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Создать альбом
+                    </a>
+                </div>
+            </div>
+            
+            <div id="userAlbums" class="row g-4">
+                <!-- Альбомы будут добавлены здесь динамически -->
+            </div>
+            
+            <div id="emptyAlbums" class="empty-state d-none">
+                <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                <h5 class="mb-3">Нет доступных альбомов для просмотра</h5>
+                <p class="text-muted">Пользователь еще не создал ни одного альбома или сделал их приватными</p>
+            </div>
+        </div>
+
+        <h4 class="mb-4 text-center" id="photosTitle">Фотографии пользователя</h4>
+        
+        <div id="userPhotos" class="row g-4">
+            <!-- Фотографии будут добавлены здесь динамически -->
+        </div>
+        
+        <div id="emptyPhotos" class="empty-state d-none">
+            <i class="fas fa-images fa-4x text-muted mb-3"></i>
+            <h5 class="mb-3">Нет доступных фотографий для просмотра</h5>
+            <p class="text-muted">Пользователь еще не загрузил фотографии или сделал их приватными</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        let isOwnProfile = true;
+        let userId = null;
+        let currentUser = null;
+
+        // Загружаем информацию о пользователе при загрузке страницы
+        $(document).ready(function() {
+            // Текущий пользователь из localStorage
+            currentUser = JSON.parse(localStorage.getItem('photoapp_user'));
+            
+            // Получаем ID пользователя из URL-пути
+            const pathSegments = window.location.pathname.split('/');
+            userId = pathSegments[pathSegments.length - 1];
+            
+            if (userId && !isNaN(userId)) {
+                // Если ID указан в URL, загружаем данные этого пользователя
+                isOwnProfile = currentUser && userId == currentUser.id;
+                loadProfileData(userId);
+            } else {
+                // Если ID не указан или некорректный, перенаправляем на главную
+                window.location.href = '/';
+            }
+            
+            // Обновляем UI для авторизованного пользователя
+            updateAuthUI();
+            
+            // Обработчик кнопки выхода
+            $('#logoutBtn').on('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+        });
+
+        function loadProfileData(uid) {
+            // Отображаем соответствующие элементы для владельца профиля или гостя
+            if (isOwnProfile) {
+                $('.owner-only').show();
+                $('#photosTitle').text('Мои фотографии');
+                $('#albumsTitle').text('Мои альбомы');
+                
+                // Добавляем кнопку сообщений для своего профиля
+                const messagesBtn = $(`
+                    <button class="btn btn-outline-primary ms-2" onclick="window.location.href='/messages.html'">
+                        <i class="fas fa-envelope me-2"></i>Сообщения
+                        <span class="badge bg-danger unread-count d-none">0</span>
+                    </button>
+                `);
+                $('.owner-only:first').append(messagesBtn);
+                
+                // Проверяем наличие непрочитанных сообщений
+                checkUnreadMessages();
+                
+                loadCurrentUserData();
+                loadUserPhotos();
+                loadUserAlbums();
+            } else {
+                $('.owner-only').hide();
+                $('#photosTitle').text('Фотографии пользователя');
+                $('#albumsTitle').text('Альбомы пользователя');
+                
+                // Добавляем кнопку "Написать сообщение" если пользователь авторизован
+                if (currentUser) {
+                    const messageBtn = $(`
+                        <div class="mb-3">
+                            <button class="btn btn-primary send-message-btn" data-user-id="${uid}">
+                                <i class="fas fa-paper-plane me-2"></i>Написать сообщение
+                            </button>
+                        </div>
+                    `);
+                    
+                    // Добавляем после имени пользователя
+                    $('#userInfo').after(messageBtn);
+                    
+                    // Добавляем обработчик клика
+                    $('.send-message-btn').on('click', function() {
+                        const recipientId = $(this).data('user-id');
+                        window.location.href = `/messages.html?user=${recipientId}`;
+                    });
+                }
+                
+                loadOtherUserData(uid);
+                loadPublicPhotos(uid);
+                loadPublicAlbums(uid);
+            }
+        }
+
+        function loadCurrentUserData() {
+            if (currentUser) {
+                $('#username').text(currentUser.username);
+                $('#userInfo').text(currentUser.email || '');
+                document.title = `Мой профиль - PhotoApp`;
+                
+                // Загрузка аватара пользователя
+                if (currentUser.avatarUrl && currentUser.avatarUrl.trim() !== '') {
+                    $('#default-avatar-icon').hide();
+                    const userAvatar = $('#user-avatar');
+                    userAvatar.attr('src', currentUser.avatarUrl + '?t=' + new Date().getTime()).show();
+                    
+                    // Обработка ошибки загрузки аватара
+                    userAvatar.on('error', function() {
+                        $(this).hide();
+                        $('#default-avatar-icon').show();
+                    });
+                } else {
+                    $('#default-avatar-icon').show();
+                    $('#user-avatar').hide();
+                }
+            }
+        }
+
+        function loadOtherUserData(uid) {
+            $.ajax({
+                url: `/api/users/${uid}`,
+                method: 'GET',
+                success: function(user) {
+                    $('#username').text(user.username);
+                    $('#userInfo').text(user.bio || 'Пользователь PhotoApp');
+                    document.title = `Профиль ${user.username} - PhotoApp`;
+                    
+                    // Загрузка аватара пользователя
+                    if (user.avatarUrl && user.avatarUrl.trim() !== '') {
+                        $('#default-avatar-icon').hide();
+                        const userAvatar = $('#user-avatar');
+                        userAvatar.attr('src', user.avatarUrl + '?t=' + new Date().getTime()).show();
+                        
+                        // Обработка ошибки загрузки аватара
+                        userAvatar.on('error', function() {
+                            $(this).hide();
+                            $('#default-avatar-icon').show();
+                        });
+                    } else {
+                        $('#default-avatar-icon').show();
+                        $('#user-avatar').hide();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ошибка при загрузке данных пользователя:', error);
+                    $('.profile-header').html('<div class="alert alert-danger">Пользователь не найден</div>');
+                }
+            });
+        }
+
+        // Загрузка альбомов текущего пользователя
+        function loadUserAlbums() {
+            $.ajax({
+                url: '/api/albums/user',
+                method: 'GET',
+                headers: getAuthHeader(),
+                success: function(albums) {
+                    renderAlbums(albums);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ошибка при загрузке альбомов:', error);
+                    $('#userAlbums').html('<div class="alert alert-danger">Ошибка при загрузке альбомов</div>');
+                }
+            });
+        }
+
+        // Загрузка публичных альбомов другого пользователя
+        function loadPublicAlbums(uid) {
+            // Проверяем, является ли пользователь админом или модератором
+            const isAdmin = currentUser && currentUser.roles && 
+                (currentUser.roles.includes('ROLE_ADMIN') || currentUser.roles.includes('ROLE_MODERATOR'));
+                
+            // Выбираем URL в зависимости от роли пользователя
+            const url = isAdmin 
+                ? `/api/albums/user/${uid}/all`  // Для админов и модераторов - все альбомы
+                : `/api/albums/user/${uid}/public`; // Для остальных - только публичные
+                
+            console.log('Загрузка альбомов пользователя:', { isAdmin, url });
+            
+            $.ajax({
+                url: url,
+                method: 'GET',
+                headers: getAuthHeader(),
+                success: function(albums) {
+                    renderAlbums(albums);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ошибка при загрузке альбомов:', error);
+                    $('#userAlbums').html('<div class="alert alert-danger">Ошибка при загрузке альбомов</div>');
+                }
+            });
+        }
+
+        // Загрузка публичных фотографий другого пользователя
+        function loadPublicPhotos(uid) {
+            // Проверяем, является ли пользователь админом или модератором
+            const isAdmin = currentUser && currentUser.roles && 
+                (currentUser.roles.includes('ROLE_ADMIN') || currentUser.roles.includes('ROLE_MODERATOR'));
+            
+            console.log('Загрузка фотографий пользователя:', { isAdmin });
+            
+            $.ajax({
+                url: `/api/photos/user/${uid}`,
+                method: 'GET',
+                headers: getAuthHeader(),
+                success: function(response) {
+                    // Извлекаем массив фотографий из поля content
+                    renderPhotos(response.content || []);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ошибка при загрузке фотографий:', error);
+                    $('#userPhotos').html('<div class="alert alert-danger">Ошибка при загрузке фотографий</div>');
+                }
+            });
+        }
+
+        // Рендеринг альбомов
+        function renderAlbums(albums) {
+            const albumsContainer = $('#userAlbums');
+            albumsContainer.empty();
+
+            if (albums && albums.length > 0) {
+                albums.forEach(album => {
+                    // Определяем иконку приватности
+                    let privacyIcon = 'fa-globe';
+                    let privacyText = 'Публичный';
+                    
+                    if (album.privacyLevel === 'PRIVATE') {
+                        privacyIcon = 'fa-lock';
+                        privacyText = 'Приватный';
+                    } else if (album.privacyLevel === 'FRIENDS') {
+                        privacyIcon = 'fa-users';
+                        privacyText = 'Для друзей';
+                    }
+                    
+                    // URL обложки альбома
+                    const coverUrl = album.coverPhotoId 
+                        ? `/api/photos/image/${album.coverPhotoId}` 
+                        : '/img/default-album-cover.jpg';
+                    
+                    // Создаем карточку альбома (как на странице albums.html)
+                    const albumElement = $(`
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="album-card" data-album-id="${album.id}">
+                                <div class="album-cover">
+                                    <img src="${coverUrl}" alt="${album.name}" class="${!album.coverPhotoId ? 'default-album-cover' : ''}">
+                                    <div class="album-overlay">
+                                        <a href="/album.html?id=${album.id}" class="album-button">
+                                            <i class="fas fa-eye me-1"></i>Просмотреть
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="album-info">
+                                    <h5 class="album-title">${album.name}</h5>
+                                    <div class="album-meta">
+                                        <div class="album-privacy">
+                                            <i class="fas ${privacyIcon}"></i>
+                                            <span>${privacyText}</span>
+                                        </div>
+                                        <div class="album-count">
+                                            <i class="fas fa-image"></i>
+                                            <span>${album.photoCount || 0} фото</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                    
+                    albumsContainer.append(albumElement);
+                    
+                    // Добавляем обработчик клика на карточку
+                    albumElement.find('.album-card').on('click', function(e) {
+                        // Если клик был не по кнопке, открываем альбом
+                        if (!$(e.target).closest('.album-button').length) {
+                            window.location.href = `/album.html?id=${album.id}`;
+                        }
+                    });
+                });
+                
+                $('#emptyAlbums').addClass('d-none');
+            } else {
+                $('#emptyAlbums').removeClass('d-none');
+            }
+        }
+
+        // Загрузка фотографий текущего пользователя
+        function loadUserPhotos() {
+            $.ajax({
+                url: `/api/photos/user/${currentUser.id}`,
+                method: 'GET',
+                headers: getAuthHeader(),
+                success: function(response) {
+                    // Извлекаем массив фотографий из поля content
+                    renderPhotos(response.content || []);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Ошибка при загрузке фотографий:', error);
+                    $('#userPhotos').html('<div class="alert alert-danger">Ошибка при загрузке фотографий</div>');
+                }
+            });
+        }
+
+        // Рендеринг фотографий
+        function renderPhotos(photos) {
+            const photosContainer = $('#userPhotos');
+            const emptyPhotos = $('#emptyPhotos');
+            
+            if (!photos || photos.length === 0) {
+                photosContainer.hide();
+                emptyPhotos.removeClass('d-none');
+                return;
+            }
+            
+            photosContainer.empty();
+            emptyPhotos.addClass('d-none');
+            photosContainer.show();
+            
+            photos.forEach(photo => {
+                const photoElement = createPhotoCard(photo);
+                photosContainer.append(photoElement);
+            });
+            
+            // Добавляем обработчики событий для карточек
+            setupPhotoCardEvents();
+        }
+
+        // Создание карточки фотографии
+        function createPhotoCard(photo) {
+            // Рейтинг и другие данные
+            const photoRating = photo.rating || 0;
+            const photoRatingCount = photo.ratingCount || 0;
+            
+            return `
+                <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                    <div class="photo-card" data-photo-id="${photo.id}">
+                        <img src="/api/photos/image/${photo.id}" alt="${photo.title || 'Фотография'}" class="card-img-top" onerror="this.src='/img/photo-placeholder.jpg'">
+                        <div class="photo-overlay">
+                            <div class="action-buttons">
+                                <button class="action-btn view-btn" title="Просмотреть">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn favorite" title="В избранное" data-photo-id="${photo.id}">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                                <button class="action-btn share" title="Поделиться" data-photo-id="${photo.id}">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="photo-info">
+                            <h5 class="photo-title">${photo.title || 'Без названия'}</h5>
+                            <div class="photo-meta">
+                                <div class="rating">
+                                    <span class="stars">${renderStars(photoRating)}</span>
+                                    <span class="count">(${photoRatingCount})</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Настройка обработчиков событий для карточек фотографий
+        function setupPhotoCardEvents() {
+            // Обработчик клика по карточке
+            $('.photo-card').on('click', function(e) {
+                // Открываем модальное окно только если клик был не по кнопке действия
+                if (!$(e.target).closest('.action-btn').length && !$(e.target).closest('.photo-author a').length) {
+                    const photoId = $(this).data('photo-id');
+                    openPhotoModal(photoId);
+                }
+            });
+            
+            // Обработчик клика по автору фото
+            $('.photo-author a').on('click', function(e) {
+                e.stopPropagation();
+                const authorId = $(this).data('author-id');
+                window.location.href = `/profile/${authorId}`;
+            });
+            
+            // Обработчик клика по кнопке просмотра
+            $('.view-btn').on('click', function(e) {
+                e.stopPropagation();
+                const photoId = $(this).closest('.photo-card').data('photo-id');
+                openPhotoModal(photoId);
+            });
+            
+            // Обработчик клика по кнопке избранного
+            $('.favorite').on('click', function(e) {
+                e.stopPropagation();
+                const photoId = $(this).data('photo-id');
+                toggleFavorite(photoId, this);
+            });
+            
+            // Обработчик клика по кнопке поделиться
+            $('.share').on('click', function(e) {
+                e.stopPropagation();
+                const photoId = $(this).data('photo-id');
+                sharePhoto(photoId);
+            });
+            
+            // Проверяем статус избранного для всех фотографий
+            checkFavoritesStatus();
+        }
+
+        // Проверка статуса избранного для всех фотографий
+        function checkFavoritesStatus() {
+            if (!isLoggedIn()) return;
+            
+            $('.favorite').each(function() {
+                const photoId = $(this).data('photo-id');
+                checkFavoriteStatus(photoId, this);
+            });
+        }
+
+        // Вспомогательные функции
+        function isLoggedIn() {
+            return localStorage.getItem('photoapp_token') !== null;
+        }
+        
+        function renderStars(rating) {
+            const fullStar = '★';
+            const emptyStar = '☆';
+            const stars = Math.round(rating);
+            return fullStar.repeat(stars) + emptyStar.repeat(5 - stars);
+        }
+        
+        // Функция открытия модального окна с фотографией
+        function openPhotoModal(photoId) {
+            // Используем глобальную функцию из main.js
+            if (typeof mainOpenPhotoModal === 'function') {
+                mainOpenPhotoModal(photoId);
+            } else {
+                window.location.href = `/photo.html?id=${photoId}`;
+            }
+        }
+
+        // Функция для проверки непрочитанных сообщений
+        function checkUnreadMessages() {
+            if (!currentUser) return;
+            
+            $.ajax({
+                url: '/api/messages/unread/count',
+                method: 'GET',
+                headers: getAuthHeaders(),
+                success: function(response) {
+                    const count = response.count || 0;
+                    const unreadBadge = $('.unread-count');
+                    
+                    if (count > 0) {
+                        unreadBadge.text(count);
+                        unreadBadge.removeClass('d-none');
+                    } else {
+                        unreadBadge.addClass('d-none');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при получении количества непрочитанных сообщений:', xhr);
+                }
+            });
+        }
+        
+        // Функция для получения заголовков авторизации
+        function getAuthHeaders() {
+            const token = localStorage.getItem('photoapp_token');
+            return token ? { 'Authorization': `Bearer ${token}` } : {};
+        }
+    </script>
+</body>
+</html> 

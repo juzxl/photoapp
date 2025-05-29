@@ -1,0 +1,60 @@
+services:
+  app:
+    build: .
+    restart: always
+    ports:
+      - '8080:8080'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/photoapp_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: secret
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: photoapp_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - '8081:8080'
+    depends_on:
+      - db
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+
+  backup:
+    image: postgres:15
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      - db
+    environment:
+      PGPASSWORD: secret
+    command: >
+      bash -c 'while true; do
+        sleep 86400;
+        pg_dump -h db -U postgres -d photoapp_db -f /backups/photoapp_$$(date +"%Y%m%d_%H%M%S").sql;
+        find /backups -type f -name "photoapp_*.sql" -mtime +7 -delete;
+      done'
+
+volumes:
+  db_data: 

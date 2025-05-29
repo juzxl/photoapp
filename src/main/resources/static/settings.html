@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки профиля - PhotoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/fonts.css">
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">PhotoApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/gallery">Галерея</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/albums">Мои альбомы</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/upload">Загрузить</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/favorites">Избранное</a>
+                    </li>
+                </ul>
+                <!-- Поиск -->
+                <form class="d-flex me-3" id="searchForm">
+                    <input class="form-control me-2" type="search" placeholder="Поиск фотографий..." id="searchInput">
+                    <button class="btn btn-outline-light" type="submit">Поиск</button>
+                </form>
+                <!-- Кнопки авторизации -->
+                <div class="guest-links">
+                    <a href="/login.html" class="btn btn-outline-light me-2">Войти</a>
+                    <a href="/register.html" class="btn btn-primary">Регистрация</a>
+                </div>
+                <!-- Меню пользователя -->
+                <div class="user-links" style="display:none;">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span class="username-display">Пользователь</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Профиль</a></li>
+                            <li><a class="dropdown-item active" href="/settings">Настройки</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Настройки профиля</h2>
+        
+        <!-- Сообщения об ошибках и успешных операциях -->
+        <div class="alert alert-success" id="successAlert" style="display: none;"></div>
+        <div class="alert alert-danger" id="errorAlert" style="display: none;"></div>
+        
+        <!-- Вкладки настроек -->
+        <ul class="nav nav-tabs mb-4" id="settingsTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile">Профиль</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="security-tab" data-bs-toggle="tab" href="#security">Безопасность</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="notifications-tab" data-bs-toggle="tab" href="#notifications">Уведомления</a>
+            </li>
+        </ul>
+        
+        <!-- Содержимое вкладок -->
+        <div class="tab-content">
+            <!-- Вкладка Профиль -->
+            <div class="tab-pane fade show active" id="profile">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <img src="/api/users/default-avatar" id="avatarPreview" 
+                                        alt="Аватар пользователя" class="rounded-circle img-thumbnail" 
+                                        style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="avatarUpload" class="btn btn-outline-primary">
+                                        <i class="bi bi-upload"></i> Изменить фото
+                                    </label>
+                                    <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                                </div>
+                                <small class="text-muted">Разрешены JPG, GIF или PNG. Макс. размер: 1MB</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Информация профиля</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="profileForm">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="displayName" class="form-label">Имя профиля</label>
+                                            <input type="text" class="form-control" id="displayName" placeholder="Ваше имя">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="username" class="form-label">Имя пользователя</label>
+                                            <input type="text" class="form-control" id="username" placeholder="Имя пользователя" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" placeholder="your@email.com" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="bio" class="form-label">О себе</label>
+                                        <textarea class="form-control" id="bio" rows="3" placeholder="Напишите немного о себе..."></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="location" class="form-label">Местоположение</label>
+                                        <input type="text" class="form-control" id="location" placeholder="Город, Страна">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="website" class="form-label">Веб-сайт</label>
+                                        <input type="url" class="form-control" id="website" placeholder="http://example.com">
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                                        <button type="button" id="deleteAccountBtn" class="btn btn-danger">
+                                            <i class="bi bi-trash"></i> Удалить аккаунт
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Вкладка Безопасность -->
+            <div class="tab-pane fade" id="security">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Изменение пароля</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="passwordForm">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Текущий пароль</label>
+                                <input type="password" class="form-control" id="currentPassword" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Новый пароль</label>
+                                <input type="password" class="form-control" id="newPassword" required>
+                                <div class="form-text">Пароль должен содержать не менее 8 символов, включать буквы, цифры и спецсимволы</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Подтверждение пароля</label>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Сменить пароль</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Вкладка Уведомления -->
+            <div class="tab-pane fade" id="notifications">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Настройки уведомлений</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="notificationsForm">
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                    <label class="form-check-label" for="emailNotifications">
+                                        Email уведомления
+                                    </label>
+                                </div>
+                                <div class="form-text">Получать уведомления на email</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6>Типы уведомлений</h6>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="notifyComments" checked>
+                                    <label class="form-check-label" for="notifyComments">
+                                        Новые комментарии
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="notifyLikes" checked>
+                                    <label class="form-check-label" for="notifyLikes">
+                                        Лайки и оценки
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="notifySystem">
+                                    <label class="form-check-label" for="notifySystem">
+                                        Системные уведомления
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно подтверждения удаления аккаунта -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Удаление аккаунта</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы действительно хотите удалить свой аккаунт? Это действие необратимо и приведет к потере всех ваших данных.</p>
+                    <div class="mb-3">
+                        <label for="deleteConfirmPassword" class="form-label">Введите пароль для подтверждения</label>
+                        <input type="password" class="form-control" id="deleteConfirmPassword">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteAccount">Удалить аккаунт</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container text-center">
+            <p>&copy; 2025 ФотоАпп. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/settings.js"></script>
+</body>
+</html> 

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модерация контента - PhotoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">PhotoApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item admin-only">
+                        <a class="nav-link" href="/admin">Админ-панель</a>
+                    </li>
+                    <li class="nav-item moderation-common">
+                        <a class="nav-link active" href="/moderator">Модерация</a>
+                    </li>
+                </ul>
+                <div class="user-menu">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span id="username" class="username-display">Пользователь</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Профиль</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Боковое меню -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item admin-only sidebar-admin-links">
+                            <a class="nav-link" href="/admin">
+                                <i class="fas fa-home"></i> Обзор
+                            </a>
+                        </li>
+                        <li class="nav-item admin-only sidebar-admin-links">
+                            <a class="nav-link" href="/admin/users.html">
+                                <i class="fas fa-users"></i> Пользователи
+                            </a>
+                        </li>
+                        <li class="nav-item moderation-common">
+                            <a class="nav-link active" href="/moderator">
+                                <i class="fas fa-tasks"></i> Модерация фото
+                            </a>
+                        </li>
+                        <li class="nav-item moderation-common">
+                            <a class="nav-link" href="/moderator/comments.html">
+                                <i class="fas fa-comments"></i> Модерация комментариев
+                            </a>
+                        </li>
+                        <li class="nav-item admin-only sidebar-admin-links">
+                            <a class="nav-link" href="/admin/photos.html">
+                                <i class="fas fa-images"></i> Все фотографии
+                            </a>
+                        </li>
+                        <li class="nav-item admin-only sidebar-admin-links">
+                            <a class="nav-link" href="/admin/reports.html">
+                                <i class="fas fa-flag"></i> Жалобы
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Основной контент -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Модерация фотографий</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="refreshModerationBtn">
+                                <i class="fas fa-sync"></i> Обновить
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter"></i> Фильтр
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item active" href="#" data-filter="waiting">На модерации</a></li>
+                                <li><a class="dropdown-item" href="#" data-filter="approved">Одобренные</a></li>
+                                <li><a class="dropdown-item" href="#" data-filter="rejected">Отклоненные</a></li>
+                                <li><a class="dropdown-item" href="#" data-filter="all">Все</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Контейнер для фотографий -->
+                <div class="row" id="moderationPhotos">
+                    <!-- Фотографии будут добавлены динамически -->
+                </div>
+
+                <!-- Пагинация -->
+                <nav aria-label="Навигация по страницам" class="mt-4">
+                    <ul class="pagination justify-content-center" id="moderationPagination">
+                        <!-- Пагинация будет добавлена динамически -->
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <!-- Модальное окно для детального просмотра фотографии -->
+    <div class="modal fade" id="photoDetailModal" tabindex="-1" aria-labelledby="photoDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="photoDetailModalLabel">Детали фотографии</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="photo-preview text-center">
+                                <img id="modalPhotoImage" src="" alt="Фото" class="img-fluid">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 id="modalPhotoTitle">Название фотографии</h5>
+                            <div class="mb-3">
+                                <strong>Автор:</strong> <span id="modalPhotoAuthor">Имя автора</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Дата загрузки:</strong> <span id="modalPhotoDate">01.01.2023</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Описание:</strong>
+                                <p id="modalPhotoDescription">Описание фотографии...</p>
+                                <button class="btn btn-sm btn-outline-primary mt-1 moderation-common" id="editDescriptionBtn">
+                                    <i class="fas fa-edit"></i> Редактировать описание
+                                </button>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Теги:</strong>
+                                <div id="modalPhotoTags" class="photo-tags">
+                                    <!-- Теги будут добавлены через JavaScript -->
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary mt-1 moderation-common" id="editTagsBtn">
+                                    <i class="fas fa-tags"></i> Редактировать теги
+                                </button>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Рейтинг:</strong>
+                                <span id="modalPhotoRating">★★★★☆</span>
+                                <span id="modalPhotoRatingCount">(10)</span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Статус модерации:</strong>
+                                <span id="modalPhotoStatus" class="badge bg-warning">На модерации</span>
+                            </div>
+                            <div class="mb-3 moderation-common">
+                                <label for="moderationComment" class="form-label">Комментарий модератора:</label>
+                                <textarea class="form-control" id="moderationComment" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Комментарии к фотографии -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Комментарии</h5>
+                            <div id="photoComments" class="photo-comments">
+                                <!-- Комментарии будут добавлены через JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-danger moderation-common" id="deletePhotoBtn">
+                        <i class="fas fa-trash-alt"></i> Удалить фото
+                    </button>
+                    <button type="button" class="btn btn-danger moderation-common" id="rejectPhotoBtn">
+                        <i class="fas fa-times"></i> Отклонить
+                    </button>
+                    <button type="button" class="btn btn-success moderation-common" id="approvePhotoBtn">
+                        <i class="fas fa-check"></i> Одобрить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования описания -->
+    <div class="modal fade" id="editDescriptionModal" tabindex="-1" aria-labelledby="editDescriptionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDescriptionModalLabel">Редактирование описания</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editDescriptionForm">
+                        <div class="mb-3">
+                            <label for="photoTitle" class="form-label">Название фотографии</label>
+                            <input type="text" class="form-control" id="photoTitle">
+                        </div>
+                        <div class="mb-3">
+                            <label for="photoDescription" class="form-label">Описание</label>
+                            <textarea class="form-control" id="photoDescription" rows="5"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="saveDescriptionBtn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования тегов -->
+    <div class="modal fade" id="editTagsModal" tabindex="-1" aria-labelledby="editTagsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editTagsModalLabel">Редактирование тегов</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="photoTags" class="form-label">Теги</label>
+                        <input type="text" class="form-control" id="photoTagsInput" placeholder="Введите теги через запятую">
+                        <small class="form-text text-muted">Например: природа, горы, пейзаж</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="saveTagsBtn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/moderation.js"></script>
+</body>
+</html> 

@@ -1,0 +1,256 @@
+/* Общие стили админки */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+}
+
+main {
+    padding-top: 20px;
+}
+
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-title {
+    color: #666;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.card .display-6 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.text-muted {
+    font-size: 0.75rem;
+}
+
+.btn-outline-primary {
+    border-color: #2196F3;
+    color: #2196F3;
+}
+
+.btn-outline-primary:hover {
+    background-color: #2196F3;
+    color: white;
+}
+
+.table {
+    font-size: 0.875rem;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #666;
+    border-top: none;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.25rem;
+}
+
+.badge-primary {
+    background-color: rgba(33, 150, 243, .1);
+    color: #2196F3;
+}
+
+.badge-success {
+    background-color: rgba(76, 175, 80, .1);
+    color: #4CAF50;
+}
+
+.badge-warning {
+    background-color: rgba(255, 152, 0, .1);
+    color: #FF9800;
+}
+
+.badge-danger {
+    background-color: rgba(244, 67, 54, .1);
+    color: #F44336;
+}
+
+canvas {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+@media (max-width: 767.98px) {
+    main {
+        padding-top: 1rem;
+    }
+
+    .card {
+        margin-bottom: 1rem;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card, .table {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+    padding: 1rem 1.5rem;
+}
+
+.modal-title {
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, .1);
+    padding: 1rem 1.5rem;
+}
+
+.form-control {
+    border-radius: 0.25rem;
+    border: 1px solid rgba(0, 0, 0, .1);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.form-control:focus {
+    border-color: #2196F3;
+    box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, .25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.search-form {
+    position: relative;
+}
+
+.search-form .form-control {
+    padding-left: 2.5rem;
+}
+
+.search-form i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.filter-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.filter-group .btn {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    color: #2196F3;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.page-link:hover {
+    background-color: rgba(33, 150, 243, .1);
+    color: #2196F3;
+}
+
+.page-item.active .page-link {
+    background-color: #2196F3;
+    border-color: #2196F3;
+}
+
+/* Стили для статусных индикаторов */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-approved {
+    background-color: rgba(76, 175, 80, .1);
+    color: #4CAF50;
+}
+
+.status-rejected {
+    background-color: rgba(244, 67, 54, .1);
+    color: #F44336;
+}
+
+.status-pending {
+    background-color: rgba(255, 152, 0, .1);
+    color: #FF9800;
+}
+
+/* Стили для спиннера загрузки */
+.spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 1rem auto;
+}
+
+/* Стили для тостов уведомлений */
+.toast {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.toast-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.toast-body {
+    padding: 0.75rem 1rem;
+} 

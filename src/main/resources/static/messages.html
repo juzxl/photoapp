@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сообщения - PhotoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/fonts.css">
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+            min-height: 600px;
+            display: flex;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .conversation-list {
+            width: 30%;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+
+        .chat-area {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .chat-input {
+            padding: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .conversation-item {
+            display: flex;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .conversation-item:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+
+        .conversation-item.active {
+            background-color: rgba(13, 110, 253, 0.2);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            object-fit: cover;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .user-avatar i {
+            font-size: 24px;
+            color: #adb5bd;
+        }
+
+        .conversation-info {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .conversation-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-last-message {
+            font-size: 0.875rem;
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conversation-time {
+            font-size: 0.75rem;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+
+        .conversation-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            max-width: 75%;
+            word-wrap: break-word;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            text-align: right;
+            margin-left: auto;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            margin-right: auto;
+        }
+
+        .message-content {
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            display: inline-block;
+        }
+
+        .message.sent .message-content {
+            background-color: #0d6efd;
+            color: white;
+            border-top-right-radius: 0.25rem;
+        }
+
+        .message.received .message-content {
+            background-color: #e9ecef;
+            color: #212529;
+            border-top-left-radius: 0.25rem;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            color: #6c757d;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6c757d;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #adb5bd;
+        }
+
+        .empty-state p {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">PhotoApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/gallery">Галерея</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/albums">Мои альбомы</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/upload">Загрузить</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/favorites">Избранное</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link active" href="/messages.html">Сообщения</a>
+                    </li>
+                </ul>
+                <!-- Поиск -->
+                <form class="d-flex me-3" id="searchForm">
+                    <input class="form-control me-2" type="search" placeholder="Поиск" id="searchInput">
+                    <button class="btn btn-outline-light" type="submit">Поиск</button>
+                </form>
+                <!-- Кнопки авторизации -->
+                <div class="guest-links">
+                    <a href="/login.html" class="btn btn-outline-light me-2">Войти</a>
+                    <a href="/register.html" class="btn btn-primary">Регистрация</a>
+                </div>
+                <!-- Меню пользователя -->
+                <div class="user-links" style="display:none;">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span class="username-display">Пользователь</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Профиль</a></li>
+                            <li><a class="dropdown-item" href="/settings">Настройки</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <div class="container mt-4">
+        <h2 class="mb-4">Сообщения</h2>
+
+        <div class="chat-container">
+            <!-- Список диалогов -->
+            <div class="conversation-list" id="conversationList">
+                <!-- Диалоги будут добавлены здесь динамически -->
+                <div class="empty-state d-none" id="emptyConversations">
+                    <i class="fas fa-comments"></i>
+                    <h5>У вас пока нет сообщений</h5>
+                    <p>Здесь будут отображаться ваши переписки с другими пользователями</p>
+                </div>
+            </div>
+
+            <!-- Область чата -->
+            <div class="chat-area">
+                <!-- Заголовок чата -->
+                <div class="chat-header d-none" id="chatHeader">
+                    <div class="user-avatar me-2">
+                        <img id="chatUserAvatar" src="" alt="Аватар пользователя" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <i class="fas fa-user" style="display: none;"></i>
+                    </div>
+                    <div class="chat-user-info">
+                        <h5 class="mb-0" id="chatUserName">Имя пользователя</h5>
+                    </div>
+                </div>
+
+                <!-- Сообщения -->
+                <div class="chat-messages" id="chatMessages">
+                    <div class="empty-state" id="emptyChatState">
+                        <i class="fas fa-comments"></i>
+                        <h5>Выберите диалог</h5>
+                        <p>Или начните новый, написав сообщение пользователю</p>
+                    </div>
+                </div>
+
+                <!-- Форма отправки сообщения -->
+                <div class="chat-input d-none" id="chatInput">
+                    <form id="messageForm">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="messageText" placeholder="Введите сообщение..." required>
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stomp-websocket@2.3.4-next/lib/stomp.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        let currentUser = null;
+        let currentConversationUserId = null;
+        let stompClient = null;
+        
+        $(document).ready(function() {
+            console.log("Messages page loaded, checking authentication");
+            
+            // Получаем токен из localStorage или куки
+            const token = localStorage.getItem('photoapp_token') || getCookie('jwt_token');
+            
+            if (!token) {
+                console.log("No authentication token found, redirecting to login");
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                return;
+            }
+            
+            // Проверяем валидность токена
+            $.ajax({
+                url: '/api/auth/validate',
+                type: 'GET',
+                headers: { 'Authorization': 'Bearer ' + token },
+                success: function(response) {
+                    console.log("Token validation successful, loading messages");
+                    
+                    // Получаем данные текущего пользователя
+                    currentUser = JSON.parse(localStorage.getItem('photoapp_user'));
+                    
+                    // Обновляем UI для авторизованного пользователя
+                    updateAuthUI();
+                    
+                    // Загружаем диалоги
+                    loadConversations();
+                    
+                    // Подключаемся к WebSocket серверу
+                    connectWebSocket();
+                    
+                    // Проверяем, нужно ли открыть определенный диалог
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const userId = urlParams.get('user');
+                    if (userId) {
+                        loadUserAndOpenChat(userId);
+                    }
+                },
+                error: function(xhr) {
+                    console.error("Token validation failed:", xhr);
+                    // Очищаем токен и перенаправляем на страницу входа
+                    localStorage.removeItem('photoapp_token');
+                    localStorage.removeItem('photoapp_user');
+                    document.cookie = "jwt_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+                }
+            });
+            
+            // Обработчик отправки сообщения
+            $('#messageForm').on('submit', function(e) {
+                e.preventDefault();
+                sendMessage();
+            });
+            
+            // Обработчик кнопки выхода
+            $('#logoutBtn').on('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+        });
+        
+        // Функция для получения значения куки по имени
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        // Подключение к WebSocket серверу
+        function connectWebSocket() {
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            
+            // Скрываем логи STOMP
+            stompClient.debug = null;
+            
+            // Получаем токен авторизации
+            const token = localStorage.getItem('photoapp_token') || getCookie('jwt_token');
+            
+            // Добавляем токен в заголовки
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+                console.log("Adding token to WebSocket connection");
+            } else {
+                console.warn("No token found for WebSocket connection");
+            }
+            
+            stompClient.connect(headers, function(frame) {
+                console.log('Connected to WebSocket: ' + frame);
+                
+                // Подписываемся на приватные сообщения для текущего пользователя
+                stompClient.subscribe('/user/queue/messages', function(messageOutput) {
+                    console.log("Получено сообщение через WebSocket", messageOutput);
+                    try {
+                        const message = JSON.parse(messageOutput.body);
+                        handleIncomingMessage(message);
+                    } catch(e) {
+                        console.error("Ошибка при обработке WebSocket сообщения", e);
+                    }
+                }, headers);
+                
+                // Подписываемся на уведомления
+                stompClient.subscribe('/user/queue/notifications', function(notification) {
+                    console.log("Получено уведомление через WebSocket", notification);
+                    loadConversations(); // Обновляем список диалогов
+                }, headers);
+                
+                // Подписываемся на ошибки
+                stompClient.subscribe('/user/queue/errors', function(errorOutput) {
+                    console.log("Получена ошибка через WebSocket", errorOutput);
+                    try {
+                        const error = JSON.parse(errorOutput.body);
+                        showChatMessage(error.message || "Произошла ошибка", 'error');
+                    } catch(e) {
+                        console.error("Ошибка при обработке WebSocket ошибки", e);
+                        showChatMessage("Произошла ошибка при отправке сообщения", 'error');
+                    }
+                }, headers);
+            }, function(error) {
+                console.error('STOMP error: ' + error);
+                showChatMessage('Ошибка подключения к сервису сообщений', 'error');
+                // Повторная попытка подключения через 5 секунд
+                setTimeout(connectWebSocket, 5000);
+            });
+        }
+        
+        // Обработка входящего сообщения
+        function handleIncomingMessage(message) {
+            console.log("Обработка входящего сообщения", message);
+            
+            if (!message) {
+                console.error("Получено пустое сообщение");
+                return;
+            }
+            
+            // Определяем, является ли сообщение частью текущего открытого диалога
+            const isRelatedToCurrentChat = 
+                currentConversationUserId && (
+                    // Если мы отправили сообщение пользователю, с которым сейчас общаемся
+                    (message.ownMessage && message.recipientId === currentConversationUserId) ||
+                    // Если мы получили сообщение от пользователя, с которым сейчас общаемся
+                    (!message.ownMessage && message.senderId === currentConversationUserId)
+                );
+            
+            console.log("Сообщение относится к текущему чату:", isRelatedToCurrentChat);
+            
+            // Если сообщение относится к текущему открытому чату
+            if (isRelatedToCurrentChat) {
+                // Добавляем сообщение в чат
+                appendMessage(message);
+                
+                // Прокручиваем чат вниз
+                scrollChatToBottom();
+                
+                // Если это входящее сообщение, отмечаем его как прочитанное
+                if (!message.ownMessage) {
+                    markMessagesAsRead(message.senderId);
+                }
+            } else if (!message.ownMessage) {
+                // Если это новое входящее сообщение, показываем уведомление
+                showChatMessage('Новое сообщение от ' + message.senderUsername, 'info');
+            }
+            
+            // В любом случае обновляем список диалогов
+            loadConversations();
+        }
+        
+        // Загрузка списка диалогов
+        function loadConversations() {
+            $.ajax({
+                url: '/api/messages/conversations',
+                method: 'GET',
+                headers: getAuthHeaders(),
+                success: function(conversations) {
+                    renderConversations(conversations);
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при загрузке списка диалогов:', xhr);
+                    showChatMessage('Не удалось загрузить диалоги', 'error');
+                }
+            });
+        }
+        
+        // Отображение списка диалогов
+        function renderConversations(conversations) {
+            const conversationList = $('#conversationList');
+            conversationList.find('.conversation-item').remove(); // Удаляем предыдущие диалоги
+            
+            if (conversations && conversations.length > 0) {
+                $('#emptyConversations').addClass('d-none');
+                
+                conversations.forEach(message => {
+                    // Определяем ID собеседника
+                    const ownMessage = message.ownMessage;
+                    const userId = ownMessage ? message.recipientId : message.senderId;
+                    const username = ownMessage ? message.recipientUsername : message.senderUsername;
+                    const avatarUrl = ownMessage ? message.recipientAvatarUrl : message.senderAvatarUrl;
+                    const isUnread = !ownMessage && !message.isRead;
+                    
+                    const lastMessage = message.content.length > 30 
+                        ? message.content.substring(0, 30) + '...' 
+                        : message.content;
+                    
+                    const conversationItem = $(`
+                        <div class="conversation-item ${currentConversationUserId === userId ? 'active' : ''}" data-user-id="${userId}">
+                            <div class="user-avatar">
+                                <img src="${avatarUrl || ''}" alt="${username}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <i class="fas fa-user" style="display: none;"></i>
+                            </div>
+                            <div class="conversation-info">
+                                <div class="conversation-name">${username}</div>
+                                <div class="conversation-last-message">${lastMessage}</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="conversation-time">${message.createdAt}</div>
+                                ${isUnread ? '<span class="badge bg-danger conversation-badge">Новое</span>' : ''}
+                            </div>
+                        </div>
+                    `);
+                    
+                    conversationList.append(conversationItem);
+                    
+                    // Добавляем обработчик клика на диалог
+                    conversationItem.on('click', function() {
+                        const userId = $(this).data('user-id');
+                        openConversation(userId);
+                    });
+                });
+            } else {
+                $('#emptyConversations').removeClass('d-none');
+            }
+        }
+        
+        // Открытие диалога с пользователем
+        function openConversation(userId) {
+            // Убираем активные классы
+            $('.conversation-item').removeClass('active');
+            
+            // Добавляем активный класс выбранному диалогу
+            $(`.conversation-item[data-user-id="${userId}"]`).addClass('active');
+            
+            // Удаляем индикаторы непрочитанных сообщений
+            $(`.conversation-item[data-user-id="${userId}"] .conversation-badge`).remove();
+            
+            // Сохраняем ID текущего собеседника
+            currentConversationUserId = userId;
+            
+            // Загружаем информацию о пользователе
+            $.ajax({
+                url: `/api/users/${userId}`,
+                method: 'GET',
+                headers: getAuthHeaders(),
+                success: function(user) {
+                    // Отображаем заголовок чата
+                    $('#chatHeader').removeClass('d-none');
+                    $('#chatUserName').text(user.username);
+                    
+                    // Отображаем аватар пользователя
+                    const avatarImg = $('#chatUserAvatar');
+                    if (user.avatarUrl && user.avatarUrl.trim() !== '') {
+                        avatarImg.attr('src', user.avatarUrl).show();
+                        avatarImg.next().hide();
+                    } else {
+                        avatarImg.hide();
+                        avatarImg.next().show();
+                    }
+                    
+                    // Показываем форму отправки сообщений
+                    $('#chatInput').removeClass('d-none');
+                    
+                    // Очищаем область сообщений
+                    $('#chatMessages').empty();
+                    
+                    // Скрываем сообщение о выборе диалога
+                    $('#emptyChatState').addClass('d-none');
+                    
+                    // Загружаем сообщения
+                    loadMessages(userId);
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при загрузке информации о пользователе:', xhr);
+                    showChatMessage('Не удалось загрузить информацию о пользователе', 'error');
+                }
+            });
+        }
+        
+        // Загружаем информацию о пользователе и открываем чат
+        function loadUserAndOpenChat(userId) {
+            $.ajax({
+                url: `/api/users/${userId}`,
+                method: 'GET',
+                headers: getAuthHeaders(),
+                success: function(user) {
+                    // Создаем временный элемент диалога, если его нет в списке
+                    if ($(`.conversation-item[data-user-id="${userId}"]`).length === 0) {
+                        const conversationItem = $(`
+                            <div class="conversation-item" data-user-id="${userId}">
+                                <div class="user-avatar">
+                                    <img src="${user.avatarUrl || ''}" alt="${user.username}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <i class="fas fa-user" style="display: none;"></i>
+                                </div>
+                                <div class="conversation-info">
+                                    <div class="conversation-name">${user.username}</div>
+                                    <div class="conversation-last-message">Начните общение</div>
+                                </div>
+                            </div>
+                        `);
+                        
+                        $('#conversationList').prepend(conversationItem);
+                        
+                        conversationItem.on('click', function() {
+                            const userId = $(this).data('user-id');
+                            openConversation(userId);
+                        });
+                    }
+                    
+                    // Открываем диалог
+                    openConversation(userId);
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при загрузке информации о пользователе:', xhr);
+                    showChatMessage('Не удалось загрузить информацию о пользователе', 'error');
+                }
+            });
+        }
+        
+        // Загрузка сообщений
+        function loadMessages(userId) {
+            $.ajax({
+                url: `/api/messages/conversation/${userId}`,
+                method: 'GET',
+                headers: getAuthHeaders(),
+                success: function(messages) {
+                    renderMessages(messages);
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при загрузке сообщений:', xhr);
+                    showChatMessage('Не удалось загрузить сообщения', 'error');
+                }
+            });
+        }
+        
+        // Отображение сообщений
+        function renderMessages(messages) {
+            const chatMessages = $('#chatMessages');
+            chatMessages.empty();
+            
+            if (messages && messages.length > 0) {
+                messages.forEach(message => {
+                    appendMessage(message);
+                });
+                
+                // Прокрутка к последнему сообщению
+                scrollChatToBottom();
+            } else {
+                chatMessages.html(`
+                    <div class="empty-state">
+                        <i class="fas fa-comments"></i>
+                        <h5>Нет сообщений</h5>
+                        <p>Начните диалог, отправив сообщение</p>
+                    </div>
+                `);
+            }
+        }
+        
+        // Добавление сообщения в чат
+        function appendMessage(message) {
+            const chatMessages = $('#chatMessages');
+            // Определяем тип сообщения только по флагу ownMessage
+            const messageType = message.ownMessage ? 'sent' : 'received';
+            const messageId = message.id || 'temp_' + new Date().getTime();
+            
+            // Проверка на дубликаты
+            if ($('.message[data-id="' + messageId + '"]').length > 0) {
+                return;
+            }
+            
+            const messageElement = $(`
+                <div class="message ${messageType}" data-id="${messageId}">
+                    <div class="message-content">${message.content}</div>
+                    <div class="message-time">
+                        ${message.createdAt}
+                    </div>
+                </div>
+            `);
+            
+            chatMessages.append(messageElement);
+        }
+        
+        // Прокрутка чата вниз
+        function scrollChatToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Отправка сообщения
+        function sendMessage() {
+            const messageInput = $('#messageText');
+            const content = messageInput.val().trim();
+            
+            if (!content || !currentConversationUserId) return;
+            
+            // Проверка на отправку самому себе
+            if (currentUser.id === currentConversationUserId) {
+                showChatMessage("Нельзя отправлять сообщения самому себе", "error");
+                return;
+            }
+            
+            const messageRequest = {
+                recipientId: currentConversationUserId,
+                content: content
+            };
+            
+            // Очищаем поле ввода сразу
+            messageInput.val('');
+            
+            // Временное сообщение для немедленного отображения
+            const tempMessage = {
+                id: 'temp_' + new Date().getTime(),
+                content: content,
+                createdAt: new Date().toLocaleString('ru-RU', { 
+                    day: '2-digit', month: '2-digit', year: 'numeric', 
+                    hour: '2-digit', minute: '2-digit' 
+                }),
+                ownMessage: true,
+                isRead: false,
+                senderId: currentUser.id,
+                senderUsername: currentUser.username,
+                recipientId: currentConversationUserId
+            };
+            
+            // Добавляем временное сообщение в чат
+            appendMessage(tempMessage);
+            
+            // Прокручиваем чат вниз
+            scrollChatToBottom();
+            
+            console.log("Отправка сообщения через WebSocket", messageRequest);
+            
+            // Если есть WebSocket соединение, отправляем через него
+            if (stompClient && stompClient.connected) {
+                stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(messageRequest));
+                return;
+            }
+            
+            // Иначе отправляем через REST API
+            console.log("WebSocket недоступен, отправка через REST API");
+            $.ajax({
+                url: '/api/messages',
+                method: 'POST',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(messageRequest),
+                success: function(message) {
+                    console.log("Сообщение успешно отправлено через REST", message);
+                    
+                    // Обновляем временное сообщение на реальное
+                    $('.message[data-id="temp_' + tempMessage.id + '"]').remove();
+                    appendMessage(message);
+                    
+                    // Прокручиваем чат вниз
+                    scrollChatToBottom();
+                    
+                    // Обновляем список диалогов
+                    loadConversations();
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при отправке сообщения:', xhr);
+                    
+                    let errorMessage = 'Не удалось отправить сообщение';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response && response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {}
+                    
+                    showChatMessage(errorMessage, 'error');
+                    
+                    // Помечаем временное сообщение как ошибочное
+                    $('.message[data-id="temp_' + tempMessage.id + '"] .message-content')
+                        .addClass('text-danger')
+                        .append(' <i class="fas fa-exclamation-circle" title="Ошибка отправки"></i>');
+                }
+            });
+        }
+        
+        // Отметка сообщений как прочитанных
+        function markMessagesAsRead(userId) {
+            $.ajax({
+                url: `/api/messages/read/${userId}`,
+                method: 'POST',
+                headers: getAuthHeaders(),
+                success: function() {
+                    // Обновляем интерфейс для отображения прочитанных сообщений
+                    loadConversations();
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при отметке сообщений как прочитанных:', xhr);
+                }
+            });
+        }
+        
+        // Показать сообщение в интерфейсе (переименованная функция)
+        function showChatMessage(message, type = 'info') {
+            // Создаем элемент уведомления
+            const toastHTML = `
+                <div class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : 'primary'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            // Создаем контейнер для уведомлений, если его еще нет
+            let toastContainer = $('.toast-container');
+            if (toastContainer.length === 0) {
+                toastContainer = $('<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>');
+                $('body').append(toastContainer);
+            }
+            
+            // Добавляем уведомление в контейнер
+            const toast = $(toastHTML);
+            toastContainer.append(toast);
+            
+            // Показываем уведомление
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 3000
+            });
+            bsToast.show();
+        }
+        
+        // Функция для получения заголовков авторизации
+        function getAuthHeaders() {
+            const token = localStorage.getItem('photoapp_token') || getCookie('jwt_token');
+            
+            // Логируем для отладки
+            console.log("Generating auth headers, token:", token ? "Token exists" : "No token");
+            
+            // Создаем заголовки
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+            }
+            
+            return headers;
+        }
+    </script>
+</body>
+</html> 

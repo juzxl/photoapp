@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои альбомы - PhotoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/fonts.css">
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">PhotoApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/gallery">Галерея</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link active" href="/albums">Мои альбомы</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/upload">Загрузить</a>
+                    </li>
+                    <li class="nav-item user-links" style="display:none;">
+                        <a class="nav-link" href="/favorites">Избранное</a>
+                    </li>
+                </ul>
+                <!-- Поиск -->
+                <form class="d-flex me-3" id="searchForm">
+                    <input class="form-control me-2" type="search" placeholder="Поиск" id="searchInput">
+                    <button class="btn btn-outline-light" type="submit">Поиск</button>
+                </form>
+                <!-- Кнопки авторизации -->
+                <div class="guest-links">
+                    <a href="/login.html" class="btn btn-outline-light me-2">Войти</a>
+                    <a href="/register.html" class="btn btn-primary">Регистрация</a>
+                </div>
+                <!-- Меню пользователя -->
+                <div class="user-links" style="display:none;">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span class="username-display">Пользователь</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Профиль</a></li>
+                            <li><a class="dropdown-item" href="/settings">Настройки</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2>Мои альбомы</h2>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAlbumModal">
+                    <i class="bi bi-plus-lg"></i> Создать альбом
+                </button>
+            </div>
+        </div>
+
+        <div id="albumsAlert" class="alert" style="display: none;"></div>
+        
+        <div class="row" id="albumsContainer">
+            <!-- Здесь будут отображаться альбомы -->
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2">Загрузка альбомов...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания альбома -->
+    <div class="modal fade" id="createAlbumModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Создать новый альбом</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="albumAlert" style="display: none;"></div>
+                    <form id="createAlbumForm">
+                        <div class="mb-3">
+                            <label for="albumName" class="form-label">Название альбома*</label>
+                            <input type="text" class="form-control" id="albumName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="albumDescription" class="form-label">Описание</label>
+                            <textarea class="form-control" id="albumDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Настройки доступа</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="albumPrivacyLevel" id="albumPrivacyPublic" value="PUBLIC" checked>
+                                <label class="form-check-label" for="albumPrivacyPublic">
+                                    <i class="bi bi-globe"></i> Публичный альбом (виден всем)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="albumPrivacyLevel" id="albumPrivacyFriends" value="FRIENDS">
+                                <label class="form-check-label" for="albumPrivacyFriends">
+                                    <i class="bi bi-people"></i> Только для друзей
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="albumPrivacyLevel" id="albumPrivacyPrivate" value="PRIVATE">
+                                <label class="form-check-label" for="albumPrivacyPrivate">
+                                    <i class="bi bi-lock"></i> Приватный (только для меня)
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Создать альбом</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно редактирования альбома -->
+    <div class="modal fade" id="editAlbumModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Редактировать альбом</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" id="editAlbumAlert" style="display: none;"></div>
+                    <form id="editAlbumForm">
+                        <input type="hidden" id="editAlbumId">
+                        <div class="mb-3">
+                            <label for="editAlbumName" class="form-label">Название альбома*</label>
+                            <input type="text" class="form-control" id="editAlbumName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editAlbumDescription" class="form-label">Описание</label>
+                            <textarea class="form-control" id="editAlbumDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Настройки доступа</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="editAlbumPrivacyLevel" id="editAlbumPrivacyPublic" value="PUBLIC">
+                                <label class="form-check-label" for="editAlbumPrivacyPublic">
+                                    <i class="bi bi-globe"></i> Публичный альбом (виден всем)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="editAlbumPrivacyLevel" id="editAlbumPrivacyFriends" value="FRIENDS">
+                                <label class="form-check-label" for="editAlbumPrivacyFriends">
+                                    <i class="bi bi-people"></i> Только для друзей
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="editAlbumPrivacyLevel" id="editAlbumPrivacyPrivate" value="PRIVATE">
+                                <label class="form-check-label" for="editAlbumPrivacyPrivate">
+                                    <i class="bi bi-lock"></i> Приватный (только для меня)
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Сохранить изменения</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно удаления альбома -->
+    <div class="modal fade" id="deleteAlbumModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Удалить альбом</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить альбом <span id="deleteAlbumName" class="fw-bold"></span>?</p>
+                    <p class="text-danger">Это действие нельзя отменить. Все фотографии в альбоме останутся в вашей галерее.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteAlbum">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container text-center">
+            <p>&copy; 2023 ФотоАпп. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/inline.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Проверяем доступ к защищенной странице
+            checkProtectedPage();
+            
+            // Обновляем UI для авторизованного пользователя
+            updateAuthUI();
+            
+            // Загружаем альбомы пользователя
+            loadUserAlbums();
+
+            $('#logoutBtn').on('click', function(e) {
+                e.preventDefault();
+                console.log("Logout button clicked in albums.html");
+
+                logout();
+            });
+            
+            // Обработка создания нового альбома
+            $('#createAlbumForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const name = $('#albumName').val().trim();
+                const description = $('#albumDescription').val().trim();
+                const privacyLevel = $('input[name="albumPrivacyLevel"]:checked').val();
+                
+                if (!name) {
+                    showError('Название альбома обязательно.', '#albumAlert');
+                    return;
+                }
+
+                const albumData = {
+                    name: name,
+                    description: description,
+                    privacyLevel: privacyLevel
+                };
+                
+            $.ajax({
+                url: `${API_URL}/albums`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(albumData),
+                success: function(response) {
+                        // Закрываем модальное окно
+                        $('#createAlbumModal').modal('hide');
+                        
+                        // Очищаем форму
+                        $('#createAlbumForm')[0].reset();
+                        
+                        // Показываем сообщение об успехе
+                        showSuccess('Альбом успешно создан!', '#albumsAlert');
+
+                        // Обновляем список альбомов
+                        loadUserAlbums();
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'Не удалось создать альбом. Пожалуйста, попробуйте еще раз.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        showError(errorMsg, '#albumAlert');
+                    }
+                });
+            });
+
+            // Обработка редактирования альбома
+            $('#editAlbumForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const albumId = $('#editAlbumId').val();
+                const name = $('#editAlbumName').val().trim();
+                const description = $('#editAlbumDescription').val().trim();
+                const privacyLevel = $('input[name="editAlbumPrivacyLevel"]:checked').val();
+                
+                if (!name) {
+                    showError('Название альбома обязательно.', '#editAlbumAlert');
+                    return;
+                }
+                
+            const albumData = {
+                    name: name,
+                    description: description,
+                    privacyLevel: privacyLevel
+            };
+
+            $.ajax({
+                    url: `${API_URL}/albums/${albumId}`,
+                    type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(albumData),
+                success: function(response) {
+                        // Закрываем модальное окно
+                        $('#editAlbumModal').modal('hide');
+                        
+                        // Показываем сообщение об успехе
+                        showSuccess('Альбом успешно обновлен!', '#albumsAlert');
+                        
+                        // Обновляем список альбомов
+                        loadUserAlbums();
+                },
+                    error: function(xhr) {
+                        let errorMsg = 'Не удалось обновить альбом. Пожалуйста, попробуйте еще раз.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        showError(errorMsg, '#editAlbumAlert');
+                }
+            });
+            });
+            
+            // Настройка модального окна удаления альбома
+            $(document).on('click', '.delete-album-btn', function() {
+                const albumId = $(this).data('id');
+                const albumName = $(this).data('name');
+                
+                $('#deleteAlbumName').text(albumName);
+                
+                // Настраиваем кнопку подтверждения
+                $('#confirmDeleteAlbum').data('id', albumId);
+                
+                // Открываем модальное окно
+                $('#deleteAlbumModal').modal('show');
+            });
+            
+            // Обработка удаления альбома
+            $('#confirmDeleteAlbum').on('click', function() {
+                const albumId = $(this).data('id');
+                
+                $.ajax({
+                    url: `${API_URL}/albums/${albumId}`,
+                    type: 'DELETE',
+                    success: function(response) {
+                        // Закрываем модальное окно
+                        $('#deleteAlbumModal').modal('hide');
+                        
+                        // Показываем сообщение об успехе
+                        showSuccess('Альбом успешно удален!', '#albumsAlert');
+                        
+                        // Обновляем список альбомов
+                        loadUserAlbums();
+                    },
+                    error: function(xhr) {
+                        // Закрываем модальное окно
+                        $('#deleteAlbumModal').modal('hide');
+                        
+                        let errorMsg = 'Не удалось удалить альбом. Пожалуйста, попробуйте еще раз.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        showError(errorMsg, '#albumsAlert');
+                    }
+                });
+            });
+            
+            // Настройка модального окна редактирования альбома
+            $(document).on('click', '.edit-album-btn', function() {
+                const albumId = $(this).data('id');
+                
+                // Получаем данные альбома
+                $.ajax({
+                    url: `${API_URL}/albums/${albumId}`,
+                    type: 'GET',
+                    success: function(album) {
+                        // Заполняем форму данными
+                        $('#editAlbumId').val(album.id);
+                        $('#editAlbumName').val(album.name);
+                        $('#editAlbumDescription').val(album.description);
+                        
+                        // Устанавливаем приватность
+                        $(`input[name="editAlbumPrivacyLevel"][value="${album.privacyLevel}"]`).prop('checked', true);
+                        
+                        // Открываем модальное окно
+                        $('#editAlbumModal').modal('show');
+                    },
+                    error: function(xhr) {
+                        let errorMsg = 'Не удалось загрузить данные альбома. Пожалуйста, попробуйте еще раз.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        showError(errorMsg, '#albumsAlert');
+                    }
+                });
+            });
+        });
+
+        // Загрузка альбомов пользователя
+        function loadUserAlbums() {
+            $.ajax({
+                url: `${API_URL}/albums/user`,
+                type: 'GET',
+                headers: getAuthHeader(),
+                success: function(albums) {
+                    const container = $('#albumsContainer');
+                    container.empty();
+                    
+                    if (albums && albums.length > 0) {
+                        console.log("Loaded albums:", albums);
+                        
+                        albums.forEach(function(album) {
+                            // Определяем изображение обложки
+                            let coverImageUrl = '';
+                            let defaultCoverClass = '';
+                            if (album.coverPhotoId) {
+                                console.log(`Album ${album.id} (${album.name}) has coverPhotoId: ${album.coverPhotoId}`);
+                                coverImageUrl = `/api/photos/image/${album.coverPhotoId}`;
+                            } else {
+                                console.log(`Album ${album.id} (${album.name}) has NO coverPhotoId`);
+                                defaultCoverClass = 'default-album-cover';
+                            }
+                            
+                            // Определяем иконку для уровня приватности
+                            let privacyIcon = '';
+                            let privacyText = '';
+                            switch (album.privacyLevel) {
+                                case 'PUBLIC':
+                                    privacyIcon = 'bi-globe';
+                                    privacyText = 'Публичный';
+                                    break;
+                                case 'FRIENDS':
+                                    privacyIcon = 'bi-people';
+                                    privacyText = 'Для друзей';
+                                    break;
+                                case 'PRIVATE':
+                                    privacyIcon = 'bi-lock';
+                                    privacyText = 'Приватный';
+                                    break;
+                                default:
+                                    privacyIcon = 'bi-lock';
+                                    privacyText = 'Приватный';
+                            }
+                            
+                            // Форматируем дату создания
+                            const createdAt = new Date(album.createdAt);
+                            const formattedDate = createdAt.toLocaleDateString('ru-RU', {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric'
+                            });
+                            
+                            // Создаем карточку альбома с эффектом стекла при наведении
+                            const albumCard = $(`
+                                <div class="col-md-4 col-sm-6 mb-4">
+                                    <div class="photo-card album-card" data-album-id="${album.id}">
+                                        <img src="${coverImageUrl}" alt="${album.name}" class="card-img-top ${defaultCoverClass}">
+                                        
+                                        <div class="photo-overlay">
+                                            <div class="action-buttons">
+                                                <a href="/album.html?id=${album.id}" class="action-btn view" title="Открыть альбом">
+                                                    <i class="fas fa-folder-open"></i>
+                                                </a>
+                                                <button class="action-btn edit" data-album-id="${album.id}" title="Редактировать альбом">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="action-btn delete" data-album-id="${album.id}" data-album-name="${album.name}" title="Удалить альбом">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="photo-info">
+                                            <h5 class="photo-title">${album.name}</h5>
+                                            <div class="photo-meta">
+                                                <div class="album-privacy">
+                                                    <i class="bi ${privacyIcon}"></i> ${privacyText}
+                                                </div>
+                                                <div class="album-date">${formattedDate}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                            
+                            container.append(albumCard);
+                            
+                            // Добавляем обработчики событий
+                            albumCard.find('.photo-card').on('click', function(e) {
+                                // Если клик был не по кнопке действия, открываем альбом
+                                if (!$(e.target).closest('.action-btn').length) {
+                                    window.location.href = `/album.html?id=${album.id}`;
+                                }
+                            });
+                            
+                            // Обработчик кнопки редактирования
+                            albumCard.find('.action-btn.edit').on('click', function(e) {
+                                e.stopPropagation();
+                                const albumId = $(this).data('album-id');
+                                openEditAlbumModal(albumId);
+                            });
+                            
+                            // Обработчик кнопки удаления
+                            albumCard.find('.action-btn.delete').on('click', function(e) {
+                                e.stopPropagation();
+                                const albumId = $(this).data('album-id');
+                                const albumName = $(this).data('album-name');
+                                openDeleteAlbumModal(albumId, albumName);
+                            });
+                        });
+                    } else {
+                        container.html(`
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    У вас пока нет альбомов. Создайте свой первый альбом!
+                                </div>
+                            </div>
+                        `);
+                    }
+                },
+                error: function() {
+                    showError('Не удалось загрузить альбомы', '#albumsAlert');
+                }
+            });
+        }
+
+        // Показать сообщение об ошибке
+        function showError(message, container) {
+            $(container).removeClass('alert-success alert-info').addClass('alert-danger')
+                .html(`<i class="bi bi-exclamation-triangle me-2"></i> ${message}`).show();
+                
+            // Автоматически скрываем сообщение через 5 секунд
+            if (container === '#albumsAlert') {
+                setTimeout(function() {
+                    $(container).hide();
+                }, 5000);
+            }
+        }
+
+        // Показать сообщение об успехе
+        function showSuccess(message, container) {
+            $(container).removeClass('alert-danger alert-info').addClass('alert-success')
+                .html(`<i class="bi bi-check-circle me-2"></i> ${message}`).show();
+                
+            // Автоматически скрываем сообщение через 5 секунд
+            setTimeout(function() {
+                $(container).hide();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

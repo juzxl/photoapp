@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Модерация комментариев - PhotoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">PhotoApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item admin-only">
+                        <a class="nav-link" href="/admin">Админ-панель</a>
+                    </li>
+                    <li class="nav-item moderation-common">
+                        <a class="nav-link" href="/moderator">Модерация фото</a>
+                    </li>
+                    <li class="nav-item moderation-common">
+                        <a class="nav-link active" href="/moderator/comments.html">Модерация комментариев</a>
+                    </li>
+                </ul>
+                <div class="user-menu">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span class="username-display">Пользователь</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Профиль</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Боковое меню -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item admin-only sidebar-admin-links">
+                            <a class="nav-link" href="/admin">
+                                <i class="fas fa-home"></i> Обзор
+                            </a>
+                        </li>
+                        <li class="nav-item admin-only sidebar-admin-links">
+                            <a class="nav-link" href="/admin/users.html">
+                                <i class="fas fa-users"></i> Пользователи
+                            </a>
+                        </li>
+                        <li class="nav-item moderation-common">
+                            <a class="nav-link" href="/moderator">
+                                <i class="fas fa-tasks"></i> Модерация фото
+                            </a>
+                        </li>
+                        <li class="nav-item moderation-common">
+                            <a class="nav-link active" href="/moderator/comments.html">
+                                <i class="fas fa-comments"></i> Модерация комментариев
+                            </a>
+                        </li>
+                        <li class="nav-item admin-only sidebar-admin-links">
+                            <a class="nav-link" href="/admin/photos.html">
+                                <i class="fas fa-images"></i> Все фотографии
+                            </a>
+                        </li>
+                        <li class="nav-item admin-only sidebar-admin-links">
+                            <a class="nav-link" href="/admin/reports.html">
+                                <i class="fas fa-flag"></i> Жалобы
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Основной контент -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Модерация комментариев</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="refreshCommentsBtn">
+                                <i class="fas fa-sync"></i> Обновить
+                            </button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter"></i> Сортировка
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item active" href="#" data-sort="newest">Сначала новые</a></li>
+                                <li><a class="dropdown-item" href="#" data-sort="oldest">Сначала старые</a></li>
+                                <li><a class="dropdown-item" href="#" data-sort="reported">С жалобами</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Фильтр по пользователю или тексту -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="commentSearchInput" placeholder="Поиск по содержимому комментария...">
+                            <button class="btn btn-outline-secondary" type="button" id="commentSearchBtn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="userSearchInput" placeholder="Поиск по имени пользователя...">
+                            <button class="btn btn-outline-secondary" type="button" id="userSearchBtn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Список комментариев -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="comments-container" id="commentsTable">
+                            <!-- Комментарии будут добавлены через JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Пагинация -->
+                <nav aria-label="Навигация по комментариям" class="mt-4">
+                    <ul class="pagination justify-content-center" id="commentsPagination">
+                        <!-- Пагинация будет добавлена через JavaScript -->
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/admin.js"></script>
+    <script src="/js/moderator/comments.js"></script>
+</body>
+</html> 

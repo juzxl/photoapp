@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аудит действий - PhotoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .activity-badge {
+            display: inline-block;
+            padding: 0.25em 0.4em;
+            font-size: 0.85em;
+            font-weight: 600;
+            border-radius: 0.25rem;
+            white-space: nowrap;
+        }
+        
+        .activity-login {
+            background-color: #e3f2fd;
+            color: #0d6efd;
+        }
+        
+        .activity-photo {
+            background-color: #d1e7dd;
+            color: #198754;
+        }
+        
+        .activity-album {
+            background-color: #f8d7da;
+            color: #dc3545;
+        }
+        
+        .activity-comment {
+            background-color: #fff3cd;
+            color: #ffc107;
+        }
+        
+        .activity-favorite {
+            background-color: #eee;
+            color: #212529;
+        }
+        
+        .action-add {
+            color: #198754;
+        }
+        
+        .action-delete {
+            color: #dc3545;
+        }
+        
+        .actor-admin {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        
+        .actor-moderator {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+        
+        .actor-user {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">PhotoApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users.html">Управление пользователями</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/activity-report.html">Отчет активности</a>
+                    </li>
+                </ul>
+                <div class="user-menu">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span id="username">Администратор</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile">Профиль</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Основной контент -->
+        <main>
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Аудит действий пользователей</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Обновить
+                    </button>
+                </div>
+            </div>
+
+            <!-- Фильтры -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="activityTypeFilter" class="form-label">Тип действия</label>
+                        <select class="form-select" id="activityTypeFilter">
+                            <option value="all" selected>Все действия</option>
+                            <option value="login">Авторизация</option>
+                            <option value="photo">Фотографии</option>
+                            <option value="album">Альбомы</option>
+                            <option value="comment">Комментарии</option>
+                            <option value="favorite">Избранное</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="actionTypeFilter" class="form-label">Действие</label>
+                        <select class="form-select" id="actionTypeFilter">
+                            <option value="all" selected>Все</option>
+                            <option value="add">Добавление</option>
+                            <option value="delete">Удаление</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="actorFilter" class="form-label">Кто выполнил</label>
+                        <select class="form-select" id="actorFilter">
+                            <option value="all" selected>Все</option>
+                            <option value="user">Пользователь</option>
+                            <option value="moderator">Модератор</option>
+                            <option value="admin">Администратор</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="userSearch" class="form-label">Поиск по пользователю</label>
+                        <input type="text" class="form-control" id="userSearch" placeholder="Имя пользователя">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Таблица аудита -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Время</th>
+                                    <th>Пользователь</th>
+                                    <th>Тип</th>
+                                    <th>Действие</th>
+                                    <th>Объект</th>
+                                    <th>Кто выполнил</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogTable">
+                                <!-- Данные будут загружены через JS -->
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Загрузка...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Пагинация -->
+            <nav aria-label="Навигация по страницам аудита" class="mt-4">
+                <ul class="pagination justify-content-center" id="pagination">
+                    <!-- Пагинация будет добавлена через JS -->
+                </ul>
+            </nav>
+        </main>
+    </div>
+
+    <!-- Toast для уведомлений -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+        <div id="toast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">Уведомление</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+            </div>
+            <div class="toast-body" id="toastMessage"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/admin/activity-report.js"></script>
+</body>
+</html> 

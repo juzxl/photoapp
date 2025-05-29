@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление фотографиями - PhotoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">PhotoApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Главная</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users.html">Управление пользователями</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/photos.html">Управление фотографиями</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/activity-report.html">Отчет активности</a>
+                    </li>
+                </ul>
+                <div class="user-menu">
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i>
+                            <span id="username">Администратор</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile.html">Профиль</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Выйти</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Боковое меню -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/">
+                                <i class="fas fa-home"></i> Обзор
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/users.html">
+                                <i class="fas fa-users"></i> Пользователи
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/photos.html">
+                                <i class="fas fa-images"></i> Фотографии
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/comments.html">
+                                <i class="fas fa-comments"></i> Комментарии
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/categories.html">
+                                <i class="fas fa-tags"></i> Категории
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/reports.html">
+                                <i class="fas fa-flag"></i> Жалобы
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Основной контент -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Управление фотографиями</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="exportPhotosBtn">
+                                <i class="fas fa-download"></i> Экспорт
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Фильтры -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Все статусы</option>
+                            <option value="pending">На модерации</option>
+                            <option value="approved">Одобренные</option>
+                            <option value="rejected">Отклоненные</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="categoryFilter">
+                            <option value="">Все категории</option>
+                            <!-- Категории будут добавлены через JavaScript -->
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Поиск">
+                            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Галерея фотографий -->
+                <div class="row" id="photosGallery">
+                    <!-- Фотографии будут добавлены через JavaScript -->
+                </div>
+
+                <!-- Пагинация -->
+                <nav aria-label="Навигация по страницам">
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Пагинация будет добавлена через JavaScript -->
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <!-- Модальное окно просмотра фотографии -->
+    <div class="modal fade" id="photoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Просмотр фотографии</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <img src="" class="img-fluid" id="modalPhoto" alt="Фотография">
+                        </div>
+                        <div class="col-md-4">
+                            <h5 id="modalPhotoTitle"></h5>
+                            <p class="text-muted" id="modalPhotoAuthor"></p>
+                            <p id="modalPhotoDescription"></p>
+                            <div class="mb-3">
+                                <strong>Теги:</strong>
+                                <div id="modalPhotoTags"></div>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Статус:</strong>
+                                <select class="form-select" id="modalPhotoStatus">
+                                    <option value="pending">На модерации</option>
+                                    <option value="approved">Одобрено</option>
+                                    <option value="rejected">Отклонено</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Причина отклонения:</strong>
+                                <textarea class="form-control" id="modalPhotoRejectionReason" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deletePhotoBtn">Удалить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="savePhotoBtn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/js/admin.js"></script>
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        
+        $(document).ready(function() {
+            loadCategories();
+            loadPhotos();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Обработчики фильтров
+            $('#statusFilter, #categoryFilter').on('change', function() {
+                currentPage = 1;
+                loadPhotos();
+            });
+
+            // Обработчик поиска
+            $('#searchBtn').on('click', function() {
+                currentPage = 1;
+                loadPhotos();
+            });
+
+            // Обработчик экспорта
+            $('#exportPhotosBtn').on('click', exportPhotos);
+
+            // Обработчик сохранения фотографии
+            $('#savePhotoBtn').on('click', savePhoto);
+
+            // Обработчик удаления фотографии
+            $('#deletePhotoBtn').on('click', deletePhoto);
+
+            // Обработчик изменения статуса
+            $('#modalPhotoStatus').on('change', function() {
+                const rejectionReasonField = $('#modalPhotoRejectionReason');
+                if ($(this).val() === 'rejected') {
+                    rejectionReasonField.prop('required', true);
+                    rejectionReasonField.closest('.mb-3').show();
+                } else {
+                    rejectionReasonField.prop('required', false);
+                    rejectionReasonField.closest('.mb-3').hide();
+                }
+            });
+        }
+
+        function loadCategories() {
+            $.ajax({
+                url: '/api/categories',
+                type: 'GET',
+                success: function(categories) {
+                    const select = $('#categoryFilter');
+                    categories.forEach(category => {
+                        select.append(`<option value="${category.id}">${category.name}</option>`);
+                    });
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при загрузке категорий:', xhr.responseText);
+                    console.error('Ошибка при загрузке категорий');
+                }
+            });
+        }
+
+        function loadPhotos() {
+            const status = $('#statusFilter').val();
+            const category = $('#categoryFilter').val();
+            const search = $('#searchInput').val();
+
+            $.ajax({
+                url: '/api/admin/photos',
+                type: 'GET',
+                data: {
+                    page: currentPage - 1,
+                    status: status,
+                    category: category,
+                    search: search
+                },
+                success: function(response) {
+                    renderPhotos(response.content);
+                    totalPages = response.totalPages;
+                    renderPagination();
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при загрузке фотографий:', xhr.responseText);
+                    console.error('Ошибка при загрузке фотографий');
+                }
+            });
+        }
+
+        function renderPhotos(photos) {
+            const gallery = $('#photosGallery');
+            gallery.empty();
+
+            photos.forEach(photo => {
+                gallery.append(`
+                    <div class="col-md-4 col-lg-3 mb-4">
+                        <div class="card h-100" style="aspect-ratio: 1/1; overflow: hidden;">
+                            <img src="${photo.thumbnailUrl}" class="card-img-top" alt="${photo.title}" 
+                                 onclick="openPhotoModal(${photo.id})" style="height: 0; padding-top: 100%; position: relative;">
+                            <img src="${photo.thumbnailUrl}" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover;"
+                                 onclick="openPhotoModal(${photo.id})">
+                            <div class="card-body">
+                                <h5 class="card-title">${photo.title}</h5>
+                                <p class="card-text text-muted">Автор: ${photo.author}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    ${formatStatus(photo.status)}
+                                    <small class="text-muted">${formatDate(photo.uploadDate)}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+        }
+
+        function renderPagination() {
+            const pagination = $('#pagination');
+            pagination.empty();
+
+            if (currentPage > 1) {
+                pagination.append(`
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="goToPage(${currentPage - 1})">Назад</a>
+                    </li>
+                `);
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                pagination.append(`
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="goToPage(${i})">${i}</a>
+                    </li>
+                `);
+            }
+
+            if (currentPage < totalPages) {
+                pagination.append(`
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="goToPage(${currentPage + 1})">Вперед</a>
+                    </li>
+                `);
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            loadPhotos();
+        }
+
+        function openPhotoModal(photoId) {
+            console.log('admin/photos.html: Вызов универсальной функции модального окна из main.js');
+            
+            // Эта страница использует специальное модальное окно для админа,
+            // но для единообразия можно добавить проверку на наличие общей функции
+            if (typeof window.adminOpenPhotoModal === 'function') {
+                window.adminOpenPhotoModal(photoId);
+                return;
+            }
+            
+            // Оригинальная логика для специальной админской модалки
+            $.ajax({
+                url: `/api/admin/photos/${photoId}`,
+                type: 'GET',
+                success: function(photo) {
+                    $('#modalPhoto').attr('src', photo.url);
+                    $('#modalPhotoTitle').text(photo.title);
+                    $('#modalPhotoAuthor').text(`Автор: ${photo.author}`);
+                    $('#modalPhotoDescription').text(photo.description);
+                    
+                    const tagsContainer = $('#modalPhotoTags');
+                    tagsContainer.empty();
+                    photo.tags.forEach(tag => {
+                        tagsContainer.append(`<span class="badge bg-secondary me-1">${tag}</span>`);
+                    });
+
+                    $('#modalPhotoStatus').val(photo.status);
+                    $('#modalPhotoRejectionReason').val(photo.rejectionReason);
+                    
+                    if (photo.status === 'rejected') {
+                        $('#modalPhotoRejectionReason').closest('.mb-3').show();
+                    } else {
+                        $('#modalPhotoRejectionReason').closest('.mb-3').hide();
+                    }
+
+                    $('#deletePhotoBtn').data('photoId', photoId);
+                    $('#savePhotoBtn').data('photoId', photoId);
+                    $('#photoModal').modal('show');
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при загрузке данных фотографии:', xhr.responseText);
+                    console.error('Ошибка при загрузке данных фотографии');
+                }
+            });
+        }
+
+        function savePhoto() {
+            const photoId = $('#savePhotoBtn').data('photoId');
+            const status = $('#modalPhotoStatus').val();
+            const rejectionReason = $('#modalPhotoRejectionReason').val();
+
+            if (status === 'rejected' && !rejectionReason) {
+                alert('Пожалуйста, укажите причину отклонения');
+                return;
+            }
+
+            $.ajax({
+                url: `/api/admin/photos/${photoId}`,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    status: status,
+                    rejectionReason: rejectionReason
+                }),
+                success: function() {
+                    $('#photoModal').modal('hide');
+                    loadPhotos();
+                },
+                error: function(xhr) {
+                    console.error('Ошибка при сохранении данных фотографии:', xhr.responseText);
+                    console.error('Ошибка при сохранении данных фотографии');
+                }
+            });
+        }
+
+        function deletePhoto() {
+            const photoId = $('#deletePhotoBtn').data('photoId');
+            
+            if (confirm('Вы уверены, что хотите удалить эту фотографию?')) {
+                $.ajax({
+                    url: `/api/admin/photos/${photoId}`,
+                    type: 'DELETE',
+                    success: function() {
+                        $('#photoModal').modal('hide');
+                        loadPhotos();
+                    },
+                    error: function(xhr) {
+                        console.error('Ошибка при удалении фотографии:', xhr.responseText);
+                        console.error('Ошибка при удалении фотографии');
+                    }
+                });
+            }
+        }
+
+        function exportPhotos() {
+            const status = $('#statusFilter').val();
+            const category = $('#categoryFilter').val();
+            const search = $('#searchInput').val();
+
+            window.location.href = `/api/admin/photos/export?status=${status}&category=${category}&search=${search}`;
+        }
+
+        function formatStatus(status) {
+            const statuses = {
+                'pending': '<span class="status-badge status-pending">На модерации</span>',
+                'approved': '<span class="status-badge status-approved">Одобрено</span>',
+                'rejected': '<span class="status-badge status-rejected">Отклонено</span>'
+            };
+            return statuses[status] || status;
+        }
+
+        function formatDate(date) {
+            return new Date(date).toLocaleString('ru-RU');
+        }
+    </script>
+</body>
+</html> 
